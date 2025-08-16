@@ -1,8 +1,6 @@
 package com.merakishubh.vehicle_booking.controller;
 
-import com.merakishubh.vehicle_booking.dto.OwnerServiceDto;
-import com.merakishubh.vehicle_booking.dto.VehicleOwnerRegisterRequestDto;
-import com.merakishubh.vehicle_booking.dto.VehicleServiceDto;
+import com.merakishubh.vehicle_booking.dto.*;
 import com.merakishubh.vehicle_booking.entity.Owner;
 import com.merakishubh.vehicle_booking.entity.Vehicle;
 import com.merakishubh.vehicle_booking.service.CloudinaryService;
@@ -10,9 +8,13 @@ import com.merakishubh.vehicle_booking.service.OwnerService;
 import com.merakishubh.vehicle_booking.service.VehicleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.apache.catalina.util.ToStringUtil;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -47,5 +49,11 @@ public class VehicleController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body("Vehicle and Owner registered successfully!");
 
+    }
+
+    @PostMapping("/ownerLogin")
+    public ResponseEntity<OwnerLoginResponseDto> ownerLogin(@RequestBody OwnerLoginRequestDto ownerLoginRequestDto){
+        System.out.println("Login api -------------------------------------->" + ownerLoginRequestDto.getEmail() + ownerLoginRequestDto.getPassword());
+        return ResponseEntity.ok(ownerService.loginOwner(ownerLoginRequestDto));
     }
 }

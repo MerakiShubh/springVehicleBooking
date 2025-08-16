@@ -1,15 +1,22 @@
 package com.merakishubh.vehicle_booking.service.impl;
 
+import com.merakishubh.vehicle_booking.dto.OwnerLoginRequestDto;
+import com.merakishubh.vehicle_booking.dto.OwnerLoginResponseDto;
 import com.merakishubh.vehicle_booking.dto.OwnerServiceDto;
 import com.merakishubh.vehicle_booking.dto.VehicleOwnerRegisterRequestDto;
 import com.merakishubh.vehicle_booking.entity.Owner;
 import com.merakishubh.vehicle_booking.repository.OwnerRepository;
+import com.merakishubh.vehicle_booking.security.AuthUtil;
 import com.merakishubh.vehicle_booking.service.EmailService;
 import com.merakishubh.vehicle_booking.service.OwnerService;
 import com.merakishubh.vehicle_booking.service.PasswordService;
 import com.merakishubh.vehicle_booking.utils.PasswordGenerator;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -36,5 +43,20 @@ public class OwnerServiceImplementation implements OwnerService {
 
         owner.setPassword(hashedPassword);
        return ownerRepository.save(owner);
+    }
+
+    private final AuthenticationManager authenticationManager;
+    private final AuthUtil authUtil;
+
+    @Override
+    public OwnerLoginResponseDto loginOwner(OwnerLoginRequestDto ownerLoginRequestDto) {
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(ownerLoginRequestDto.getEmail(), ownerLoginRequestDto.getPassword())
+        );
+
+        Owner owner = (Owner) authentication.getPrincipal();
+
+        String token = authUtil.generateAccessToken(owner);
+        return new OwnerLoginResponseDto(token, owner.getId());
     }
 }
