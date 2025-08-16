@@ -21,6 +21,11 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/vehicle")
 public class VehicleController {
 
+    @GetMapping("/hello")
+    public String Hello(){
+        return "hello";
+    }
+
     private final VehicleService vehicleService;
     private final OwnerService ownerService;
     private final CloudinaryService cloudinaryService;
