@@ -1,17 +1,18 @@
 package com.merakishubh.vehicle_booking.service.impl;
 
+import com.merakishubh.vehicle_booking.dto.AddMoreVehicleRequestDto;
 import com.merakishubh.vehicle_booking.dto.GetOwnerVehiclesResponseDto;
-import com.merakishubh.vehicle_booking.dto.OwnerServiceDto;
 import com.merakishubh.vehicle_booking.dto.VehicleOwnerRegisterRequestDto;
-import com.merakishubh.vehicle_booking.dto.VehicleServiceDto;
 import com.merakishubh.vehicle_booking.entity.Owner;
 import com.merakishubh.vehicle_booking.entity.Vehicle;
+import com.merakishubh.vehicle_booking.repository.OwnerRepository;
 import com.merakishubh.vehicle_booking.repository.VehicleRepository;
 import com.merakishubh.vehicle_booking.security.AuthUtil;
 import com.merakishubh.vehicle_booking.service.VehicleService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -20,6 +21,7 @@ import java.util.List;
 public class VehicleServiceImplementation implements VehicleService {
 
     private final VehicleRepository vehicleRepository;
+    private final OwnerRepository ownerRepository;
     private final ModelMapper modelMapper;
 
     @Override
@@ -58,4 +60,28 @@ public class VehicleServiceImplementation implements VehicleService {
             return dto;
         }).toList();
     }
+
+    @Override
+    public void addMoreVehicle(String token, String imageUrl, AddMoreVehicleRequestDto addMoreVehicleRequestDto) {
+        String jwt = token.startsWith("Bearer ") ? token.substring(7) : token;
+        String email = authUtil.getEmailFromToken(jwt);
+
+        // Find owner
+
+        Owner owner = ownerRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Owner not found"));
+
+        Vehicle vehicle = new Vehicle();
+        vehicle.setVehicleName(addMoreVehicleRequestDto.getVehicleName());
+        vehicle.setModelName(addMoreVehicleRequestDto.getModelName());
+        vehicle.setVehicleNumber(addMoreVehicleRequestDto.getVehicleNumber());
+        vehicle.setAvailableFrom(addMoreVehicleRequestDto.getAvailableFrom());
+        vehicle.setAvailableTo(addMoreVehicleRequestDto.getAvailableTo());
+        vehicle.setVehiclePicture(imageUrl);
+
+        vehicle.setOwner(owner);
+
+        vehicleRepository.save(vehicle);
+    }
+
 }

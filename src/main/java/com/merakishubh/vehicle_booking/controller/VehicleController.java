@@ -66,4 +66,16 @@ public class VehicleController {
         List<GetOwnerVehiclesResponseDto> response = vehicleService.getOwnerVehicles(token);
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping(value = "/addMoreVehicle", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> addMoreVehicle(
+            @RequestHeader("Authorization") String token,
+            @ModelAttribute @Valid AddMoreVehicleRequestDto addMoreVehicleRequestDto,
+            @RequestPart("vehicleImage")MultipartFile vehicleImage
+    ){
+        String imageUrl = cloudinaryService.uploadFile(vehicleImage);
+        vehicleService.addMoreVehicle(token, imageUrl, addMoreVehicleRequestDto);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body("Vehicle added successfully!");
+    }
 }
