@@ -2,6 +2,7 @@ package com.merakishubh.vehicle_booking.security;
 
 import com.merakishubh.vehicle_booking.entity.Owner;
 import com.merakishubh.vehicle_booking.repository.OwnerRepository;
+import com.merakishubh.vehicle_booking.repository.RenterRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
@@ -21,6 +23,7 @@ import java.io.IOException;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final OwnerRepository ownerRepository;
+    private final RenterRepository renterRepository;
     private final AuthUtil authUtil;
 
     private final HandlerExceptionResolver handlerExceptionResolver;
@@ -43,14 +46,34 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             String token = requestTokenHeader.split("Bearer ")[1];
             System.out.println("token ------------------------------------>" + token);
             String email = authUtil.getEmailFromToken(token);
+            String role = authUtil.getRoleFromToken(token);
+
+            System.out.println("email ------------------------>" + email + " role------------->" + role);
+
+//            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+//                Owner owner = ownerRepository.findByEmail(email).orElseThrow();
+//                UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
+//                        new UsernamePasswordAuthenticationToken(owner, null, owner.getAuthorities());
+//                SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+//
+//            }
 
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                Owner owner = ownerRepository.findByEmail(email).orElseThrow();
-                UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
-                        new UsernamePasswordAuthenticationToken(owner, null, owner.getAuthorities());
-                SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+                UserDetails userDetails;
 
+                if ("OWNER".equals(role)) {
+                    userDetails = ownerRepository.findByEmail(email)
+                            .orElseThrow(() -> new RuntimeException("Owner not found"));
+                } else {
+                    userDetails = renterRepository.findByEmail(email)
+                            .orElseThrow(() -> new RuntimeException("Renter not found"));
+                }
+
+                UsernamePasswordAuthenticationToken auth =
+                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(auth);
             }
+
             filterChain.doFilter(request, response);
         }catch (Exception ex){
             handlerExceptionResolver.resolveException(request, response, null, ex);
