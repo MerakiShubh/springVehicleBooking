@@ -18,6 +18,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/vehicle")
@@ -55,5 +57,13 @@ public class VehicleController {
     public ResponseEntity<OwnerLoginResponseDto> ownerLogin(@RequestBody OwnerLoginRequestDto ownerLoginRequestDto){
         System.out.println("Login api -------------------------------------->" + ownerLoginRequestDto.getEmail() + ownerLoginRequestDto.getPassword());
         return ResponseEntity.ok(ownerService.loginOwner(ownerLoginRequestDto));
+    }
+
+    @GetMapping("/getVehicles")
+    public ResponseEntity<List<GetOwnerVehiclesResponseDto>> getOwnerVehiclesByEmail(
+            @RequestHeader("Authorization") String token) {
+
+        List<GetOwnerVehiclesResponseDto> response = vehicleService.getOwnerVehicles(token);
+        return ResponseEntity.ok(response);
     }
 }

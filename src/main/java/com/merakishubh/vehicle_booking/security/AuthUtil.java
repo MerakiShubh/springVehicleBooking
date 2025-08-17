@@ -2,6 +2,8 @@ package com.merakishubh.vehicle_booking.security;
 
 
 import com.merakishubh.vehicle_booking.entity.Owner;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.Data;
@@ -30,5 +32,15 @@ public class AuthUtil {
                 .expiration(new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000))
                 .signWith(getSecretKey())
                 .compact();
+    }
+
+    public String getEmailFromToken(String token) {
+        Claims claims =  Jwts.parser()
+                                .verifyWith(getSecretKey())
+                                .build()
+                                .parseSignedClaims(token)
+                                .getPayload();
+
+        return claims.getSubject();
     }
 }

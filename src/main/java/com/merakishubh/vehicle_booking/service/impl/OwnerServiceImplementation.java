@@ -5,6 +5,8 @@ import com.merakishubh.vehicle_booking.dto.OwnerLoginResponseDto;
 import com.merakishubh.vehicle_booking.dto.OwnerServiceDto;
 import com.merakishubh.vehicle_booking.dto.VehicleOwnerRegisterRequestDto;
 import com.merakishubh.vehicle_booking.entity.Owner;
+import com.merakishubh.vehicle_booking.error.ApiError;
+import com.merakishubh.vehicle_booking.error.EmailAlreadyExistsException;
 import com.merakishubh.vehicle_booking.repository.OwnerRepository;
 import com.merakishubh.vehicle_booking.security.AuthUtil;
 import com.merakishubh.vehicle_booking.service.EmailService;
@@ -30,6 +32,10 @@ public class OwnerServiceImplementation implements OwnerService {
 
     @Override
     public Owner registerOwner(VehicleOwnerRegisterRequestDto vehicleOwnerRegisterRequestDto) {
+
+        if(ownerRepository.findByEmail(vehicleOwnerRegisterRequestDto.getEmail()).isPresent()) {
+            throw new EmailAlreadyExistsException("Email already exists: " + vehicleOwnerRegisterRequestDto.getEmail());
+        }
        Owner owner = new Owner();
        owner.setName(vehicleOwnerRegisterRequestDto.getName());
        owner.setEmail(vehicleOwnerRegisterRequestDto.getEmail());
