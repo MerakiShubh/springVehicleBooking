@@ -1,9 +1,6 @@
 package com.merakishubh.vehicle_booking.service.impl;
 
-import com.merakishubh.vehicle_booking.dto.AddMoreVehicleRequestDto;
-import com.merakishubh.vehicle_booking.dto.GetOwnerVehiclesResponseDto;
-import com.merakishubh.vehicle_booking.dto.UpdateVehicleRequestDto;
-import com.merakishubh.vehicle_booking.dto.VehicleOwnerRegisterRequestDto;
+import com.merakishubh.vehicle_booking.dto.*;
 import com.merakishubh.vehicle_booking.entity.Owner;
 import com.merakishubh.vehicle_booking.entity.Vehicle;
 import com.merakishubh.vehicle_booking.repository.OwnerRepository;
@@ -12,7 +9,9 @@ import com.merakishubh.vehicle_booking.security.AuthUtil;
 import com.merakishubh.vehicle_booking.service.VehicleService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -140,4 +139,21 @@ public class VehicleServiceImplementation implements VehicleService {
         }
         vehicleRepository.delete(vehicle);
     }
+
+    @Override
+    public List<VehicleResponseDto> getAvailableVehicles() {
+        return vehicleRepository.findByIsBookedFalse()
+                .stream()
+                .map(vehicle -> new VehicleResponseDto(
+                        vehicle.getVehicleName(),
+                        vehicle.getModelName(),
+                        vehicle.getVehicleNumber(),
+                        vehicle.getVehiclePicture(),
+                        vehicle.getAvailableFrom(),
+                        vehicle.getAvailableTo()
+                ))
+                .toList();
+    }
+
+
 }

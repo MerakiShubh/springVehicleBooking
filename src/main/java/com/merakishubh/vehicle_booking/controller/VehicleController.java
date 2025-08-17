@@ -97,4 +97,9 @@ public class VehicleController {
         vehicleService.deleteVehicle(vehicleNumber, token);
         return ResponseEntity.ok("Vehicle deleted successfully");
     }
+
+    @GetMapping("/available")
+    public ResponseEntity<List<VehicleResponseDto>> getAvailableVehicles() {
+        return ResponseEntity.ok(vehicleService.getAvailableVehicles());
+    }
 }
