@@ -2,6 +2,7 @@ package com.merakishubh.vehicle_booking.service.impl;
 
 import com.merakishubh.vehicle_booking.dto.AddMoreVehicleRequestDto;
 import com.merakishubh.vehicle_booking.dto.GetOwnerVehiclesResponseDto;
+import com.merakishubh.vehicle_booking.dto.UpdateVehicleRequestDto;
 import com.merakishubh.vehicle_booking.dto.VehicleOwnerRegisterRequestDto;
 import com.merakishubh.vehicle_booking.entity.Owner;
 import com.merakishubh.vehicle_booking.entity.Vehicle;
@@ -26,6 +27,9 @@ public class VehicleServiceImplementation implements VehicleService {
 
     @Override
     public Vehicle registerVehicle(VehicleOwnerRegisterRequestDto vehicleOwnerRegisterRequestDto, String imageUrl, Owner owner) {
+        if (vehicleRepository.existsByVehicleNumber(vehicleOwnerRegisterRequestDto.getVehicleNumber())) {
+            throw new RuntimeException("Vehicle number already exists!");
+        }
         Vehicle vehicle = new Vehicle();
         vehicle.setVehicleName(vehicleOwnerRegisterRequestDto.getVehicleName());
         vehicle.setModelName(vehicleOwnerRegisterRequestDto.getModelName());
@@ -71,6 +75,10 @@ public class VehicleServiceImplementation implements VehicleService {
         Owner owner = ownerRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Owner not found"));
 
+        if (vehicleRepository.existsByVehicleNumber(addMoreVehicleRequestDto.getVehicleNumber())) {
+            throw new RuntimeException("Vehicle number already exists!");
+        }
+
         Vehicle vehicle = new Vehicle();
         vehicle.setVehicleName(addMoreVehicleRequestDto.getVehicleName());
         vehicle.setModelName(addMoreVehicleRequestDto.getModelName());
@@ -84,4 +92,52 @@ public class VehicleServiceImplementation implements VehicleService {
         vehicleRepository.save(vehicle);
     }
 
+    @Override
+    public Vehicle updateVehicle(String token, String vehicleNumber, UpdateVehicleRequestDto dto) {
+        String jwt = token.startsWith("Bearer ") ? token.substring(7) : token;
+        String email = authUtil.getEmailFromToken(jwt);
+
+        Owner owner = ownerRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Owner not found"));
+
+        Vehicle vehicle = vehicleRepository.findByVehicleNumber(vehicleNumber)
+                .orElseThrow(() -> new RuntimeException("Vehicle not found"));
+
+        if (!vehicle.getOwner().getId().equals(owner.getId())) {
+            throw new RuntimeException("You are not authorized to update this vehicle");
+        }
+
+        if (dto.getVehicleName() != null) vehicle.setVehicleName(dto.getVehicleName());
+        if (dto.getModelName() != null) vehicle.setModelName(dto.getModelName());
+
+        if (dto.getVehicleNumber() != null && !dto.getVehicleNumber().equals(vehicle.getVehicleNumber())) {
+            // Checking this vehicle number already exists ?
+            vehicleRepository.findByVehicleNumber(dto.getVehicleNumber())
+                    .ifPresent(v -> { throw new RuntimeException("Vehicle number already exists"); });
+            vehicle.setVehicleNumber(dto.getVehicleNumber());
+        }
+
+        if (dto.getAvailableFrom() != null) vehicle.setAvailableFrom(dto.getAvailableFrom());
+        if (dto.getAvailableTo() != null) vehicle.setAvailableTo(dto.getAvailableTo());
+        if (dto.getIsBooked() != null) vehicle.setIsBooked(dto.getIsBooked());
+
+        return vehicleRepository.save(vehicle);
+    }
+
+    @Override
+    public void deleteVehicle(String vehicleNumber, String token) {
+        String jwt = token.startsWith("Bearer ") ? token.substring(7) : token;
+        String email = authUtil.getEmailFromToken(jwt);
+
+        Owner owner = ownerRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Owner not found"));
+
+        Vehicle vehicle = vehicleRepository.findByVehicleNumber(vehicleNumber)
+                .orElseThrow(() -> new RuntimeException("Vehicle not found"));
+
+        if (!vehicle.getOwner().getId().equals(owner.getId())) {
+            throw new RuntimeException("You are not authorized to delete this vehicle");
+        }
+        vehicleRepository.delete(vehicle);
+    }
 }

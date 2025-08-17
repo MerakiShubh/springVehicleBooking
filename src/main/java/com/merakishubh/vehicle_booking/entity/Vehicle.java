@@ -17,6 +17,7 @@ public class Vehicle {
 
     private String vehicleName;
     private String modelName;
+    @Column(nullable = false, unique = true)
     private String vehicleNumber;
     private String vehiclePicture;
 

@@ -78,4 +78,23 @@ public class VehicleController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body("Vehicle added successfully!");
     }
+
+    @PutMapping("/updateVehicle/{vehicleNumber}")
+    public ResponseEntity<Vehicle> updateVehicle(
+            @RequestHeader("Authorization") String token,
+            @PathVariable String vehicleNumber,
+            @RequestBody UpdateVehicleRequestDto dto) {
+
+        Vehicle updatedVehicle = vehicleService.updateVehicle(token, vehicleNumber, dto);
+        return ResponseEntity.ok(updatedVehicle);
+    }
+
+    @DeleteMapping("/delete/{vehicleNumber}")
+    public ResponseEntity<String> deleteVehicle(
+            @PathVariable String vehicleNumber,
+            @RequestHeader("Authorization") String token
+    ){
+        vehicleService.deleteVehicle(vehicleNumber, token);
+        return ResponseEntity.ok("Vehicle deleted successfully");
+    }
 }
