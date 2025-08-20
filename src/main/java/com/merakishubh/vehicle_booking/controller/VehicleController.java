@@ -40,6 +40,7 @@ public class VehicleController {
             @ModelAttribute @Valid VehicleOwnerRegisterRequestDto vehicleOwnerRegisterRequestDto,
             @RequestPart("vehicleImage")MultipartFile vehicleImage
             ){
+        System.out.println("owner register api ------------------------------>");
 
         String imageUrl = cloudinaryService.uploadFile(vehicleImage);
         System.out.println("Imageurl ------------------------->" + imageUrl);
@@ -98,8 +99,8 @@ public class VehicleController {
         return ResponseEntity.ok("Vehicle deleted successfully");
     }
 
-    @GetMapping("/available")
-    public ResponseEntity<List<VehicleResponseDto>> getAvailableVehicles() {
-        return ResponseEntity.ok(vehicleService.getAvailableVehicles());
-    }
+//    @GetMapping("/available")
+//    public ResponseEntity<List<VehicleResponseDto>> getAvailableVehicles() {
+//        return ResponseEntity.ok(vehicleService.getAvailableVehicles());
+//    }
 }

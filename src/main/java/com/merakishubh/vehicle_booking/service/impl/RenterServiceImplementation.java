@@ -7,6 +7,7 @@ import com.merakishubh.vehicle_booking.dto.RenterLoginResponseDto;
 import com.merakishubh.vehicle_booking.entity.Renter;
 import com.merakishubh.vehicle_booking.entity.Vehicle;
 import com.merakishubh.vehicle_booking.error.EmailAlreadyExistsException;
+import com.merakishubh.vehicle_booking.repository.OwnerRepository;
 import com.merakishubh.vehicle_booking.repository.RenterRepository;
 import com.merakishubh.vehicle_booking.repository.VehicleRepository;
 import com.merakishubh.vehicle_booking.security.AuthUtil;
@@ -29,10 +30,11 @@ public class RenterServiceImplementation implements RenterService {
     private final AuthUtil authUtil;
     private final VehicleRepository vehicleRepository;
     private final EmailService emailService;
+    private final OwnerRepository ownerRepository;
 
     @Override
     public void createRenter(CreateRenterRequestDto createRenterRequestDto) {
-        if(renterRepository.findByEmail(createRenterRequestDto.getEmail()).isPresent()) {
+        if(renterRepository.findByEmail(createRenterRequestDto.getEmail()).isPresent() || ownerRepository.findByEmail(createRenterRequestDto.getEmail()).isPresent()) {
             throw new EmailAlreadyExistsException("Email already exists: " + createRenterRequestDto.getEmail());
         }
         Renter renter = new Renter();

@@ -8,6 +8,7 @@ import com.merakishubh.vehicle_booking.entity.Owner;
 import com.merakishubh.vehicle_booking.error.ApiError;
 import com.merakishubh.vehicle_booking.error.EmailAlreadyExistsException;
 import com.merakishubh.vehicle_booking.repository.OwnerRepository;
+import com.merakishubh.vehicle_booking.repository.RenterRepository;
 import com.merakishubh.vehicle_booking.security.AuthUtil;
 import com.merakishubh.vehicle_booking.service.EmailService;
 import com.merakishubh.vehicle_booking.service.OwnerService;
@@ -29,11 +30,13 @@ public class OwnerServiceImplementation implements OwnerService {
     private final ModelMapper modelMapper;
     private final PasswordService passwordService;
     private final EmailService emailService;
+    private final RenterRepository renterRepository;
 
     @Override
     public Owner registerOwner(VehicleOwnerRegisterRequestDto vehicleOwnerRegisterRequestDto) {
 
-        if(ownerRepository.findByEmail(vehicleOwnerRegisterRequestDto.getEmail()).isPresent()) {
+        if(ownerRepository.findByEmail(vehicleOwnerRegisterRequestDto.getEmail()).isPresent() ||
+                renterRepository.findByEmail(vehicleOwnerRegisterRequestDto.getEmail()).isPresent()) {
             throw new EmailAlreadyExistsException("Email already exists: " + vehicleOwnerRegisterRequestDto.getEmail());
         }
        Owner owner = new Owner();
